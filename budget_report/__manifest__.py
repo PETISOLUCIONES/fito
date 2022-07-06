@@ -25,6 +25,11 @@
         'views/templates.xml',
     ],
 
+    'web.assets_frontend': [
+        '/budget_report/static/scss/main.scss',
+        '/budget_report/static/js/main.js',
+    ],
+
     'demo': [
         'demo/demo.xml',
     ],

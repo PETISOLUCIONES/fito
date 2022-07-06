@@ -1,11 +1,11 @@
 <odoo>
     <data>
-        <template id="new_style_assets" name="new style assets" inherit_id="web.assets_frontend">
+        <!--<template id="new_style_assets" name="new style assets" inherit_id="web.assets_frontend">
             <xpath expr="." position="inside">
-                <link rel="stylesheet" type="text/css" href="/budget_report/static/scss/main.scss" />
+                <link rel="stylesheet"  href="/budget_report/static/scss/main.scss" />
                 <script type="text/javascript" src="/budget_report/static/js/main.js" />
             </xpath>
-        </template>
+        </template>-->
 
         <template id="budget_report_template" name="Budget Report Template">
             <t t-call-assets="web.assets_common"/>

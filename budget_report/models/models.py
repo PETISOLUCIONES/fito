@@ -110,7 +110,7 @@ class ProductTemplateInherited(models.Model):
             self.record_sync(record, 'create')
         return res
 
-    @api.model
+    #@api.model
     def write(self, vals):
         res = super(ProductTemplateInherited, self).write(vals)
         for record in self:
