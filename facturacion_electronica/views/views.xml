@@ -263,6 +263,7 @@
                 <xpath expr="//group[@id='header_right_group']" position="after">
                     <group>
                         <!--<field name="document_type" attrs="{'readonly':[('state','not in',['draft'])],'required':[('type', '=', 'out_invoice')], 'invisible':[('type', '!=', 'out_invoice')]}" />-->
+                        <field name="comentario" attrs="{'readonly':[('state','not in',['draft'])], 'invisible':[('move_type', 'not in', ['out_invoice', 'out_refund'])]}" />
                         <field name="payment_method_id" attrs="{'readonly':[('state','not in',['draft'])], 'invisible':[('move_type', 'not in', ['out_invoice', 'out_refund'])]}" />
                         <field name="payment_mean_id" attrs="{'readonly':[('state','not in',['draft'])], 'invisible':[('move_type', 'not in', ['out_invoice', 'out_refund'])]}" />
                         <!--<field name="currency_rate" attrs="{'invisible':[('type', 'not in', ['out_invoice', 'out_refund'])]}" readonly="True"/>-->

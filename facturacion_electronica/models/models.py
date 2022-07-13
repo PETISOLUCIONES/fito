@@ -18,6 +18,7 @@ import os
 import glob
 import functools
 import operator
+import pytz
 
 
 
@@ -131,6 +132,7 @@ class AccountMove(models.Model):
         string='Archivo Adjunto',
         copy=False
     )
+    comentario = fields.Char(string='Comentario')
     currency_rate = fields.Float(string='Tasa de cambio', digits=0, compute='onchange_currency_invoice')
 
     @api.depends("currency_id", "invoice_date")
@@ -367,6 +369,15 @@ class AccountMove(models.Model):
         nit_company = move.GetNitCompany(move.company_id.vat)
         CustNum = move.GetNitCompany(move.partner_id.vat)
         comment = self.cleanhtml(str(move.narration))
+        # Get current timezone
+        tz = self.env.user.tz
+        if tz:
+            local_tz = pytz.timezone(tz)
+        else:
+            local_tz = pytz.utc
+
+        # Get current time
+        now = datetime.now(local_tz)
 
         datos = dict(Company=nit_company,
                      InvoiceType=invoicetype,
@@ -386,14 +397,16 @@ class AccountMove(models.Model):
                      ContactCity=' ',
                      ContactAddress=' ',
                      CustomerName=move.partner_id.name,
-                     InvoiceDate=move.invoice_date.strftime('%d/%m/%Y') + ' ' + datetime.now().strftime('%H:%M:%S'),
-                     DueDate=move.invoice_date_due.strftime('%d/%m/%Y') + ' ' + datetime.now().strftime('%H:%M:%S'),
+                     InvoiceDate=now.strftime('%d/%m/%Y %H:%M:%S'),
+                     DueDate=move.invoice_date_due.strftime('%d/%m/%Y')+ " " + now.strftime('%H:%M:%S'), #now.strftime('%d/%m/%Y %H:%M:%S'),
                      DocWHTaxAmt=str(round(abs(totales['total_retenciones']), 2)),
                      TaxAmtLineReteiva=str(round(abs(totales['total_reteiva']), 2)),
                      TaxAmtLineReteica=str(round(abs(totales['total_reteica']), 2)),
                      InvoiceComment=comment,
+                     InvoiceComment1=str(move.currency_rate),
                      InvoiceComment2=move.invoice_user_id.name,
-                     InvoiceComment3=move.ref,
+                     InvoiceComment3=str(move.comentario) if move.comentario else "",
+                     InvoiceComment4=resolucion['CMReasonDesc_c'] if invoicetype == '91' else resolucion['DMReasonDesc_c'] if invoicetype == '92' else "",
                      CurrencyCode=move.partner_id.partner_currency_id.name,
                      CurrencyCodeCurrencyID=move.partner_id.partner_currency_id.name,
                      ContingencyInvoice='0',
@@ -425,10 +438,10 @@ class AccountMove(models.Model):
                      CalculationRate_c=resolucion['CalculationRate_c'],
                      DateCalculationRate_c=resolucion['DateCalculationRate_c'],
                      ConditionPay='0',
-                     DspDocSubTotal=str(round(totales['subtotal'], 2)),
+                     DspDocSubTotal=str(round(float_round(totales['subtotal'], precision_digits=2), 2)),
                      DocTaxAmt=str(round(float_round(totales['total_impuestos'], precision_digits=2),2)),
-                     DspDocInvoiceAmt=str(round(totales['total'], 2)),
-                     Discount=str(round(totales['total_descuento'], 2)))
+                     DspDocInvoiceAmt=str(round(float_round(totales['total'], precision_digits=2), 2)),
+                     Discount=str(round(float_round(totales['total_descuento'], precision_digits=2), 2)))
         return datos
 
     def get_price_unit_inv_line(self, line):
@@ -452,7 +465,7 @@ class AccountMove(models.Model):
             if line.display_type != 'line_section' and line.display_type != 'line_note':
                 line_price_unit = move.get_price_unit_inv_line(line)
                 price_unit_wo_discount = line_price_unit * (1 - (line.discount / 100.0))
-                line_price_subtotal = line.price_subtotal
+                line_price_subtotal = round(line_price_unit, 2) * line.quantity
                 if line_price_subtotal > 0 and line.name not in producto_regalo:
                     if len(line.tax_ids) == 0:
                         dato = dict(Company=nit_company,
@@ -481,7 +494,7 @@ class AccountMove(models.Model):
                                         DocTaxAmt=str(abs(round(
                                             float_round(line_price_subtotal * tax.amount / 100, precision_digits=2),
                                             2))),
-                                        Percent=(str("{0:.2f}".format(abs(tax.amount)))),
+                                        Percent=(str("{0:.3f}".format(abs(tax.amount)))),
                                         WithholdingTax_c=str(tax.type_tax.retention))
                             datos.append(dato)
                 i = i + 1

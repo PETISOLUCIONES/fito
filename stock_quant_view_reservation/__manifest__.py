@@ -9,6 +9,6 @@
     "license": "AGPL-3",
     "author": "ACSONE SA/NV,Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/stock-logistics-warehouse",
-    "depends": ["stock"],
+    "depends": ["stock", "sale"],
     "data": ["views/stock_quant.xml", "views/stock_move_line_views.xml"],
 }
