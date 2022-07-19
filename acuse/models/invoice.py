@@ -153,20 +153,37 @@ class Invoice(models.Model):
             responsews = requests.post(url, data=body.encode('utf-8'), headers=headers)
 
             tipodato = type(responsews)
-            resultados = ""
+            acuse_aprobado_anterior = "Acuse con numero {0} ya aprobado con los sgtes datos".format(
+                encabezado['AcsNum'])
             respuestaws = ""
             if responsews.status_code == 200:
                 respuesta = eval(responsews.content.decode('utf-8'))
                 if 'Respuesta' in respuesta:
                     resultados = respuesta['Respuesta']
-                    respuestaws = move.GetResponseWS(resultados)
+                    respuestaws = move.GetResponseWS(resultados).split(';')
 
-                if respuestaws == 'PROCESADO_CORRECTAMENTE':
+                if respuestaws[0] == 'PROCESADO_CORRECTAMENTE':
                     move.state_acuse = '032'
                     move.description_status_dian_acuse = respuestaws
                     move.journal_id.acuse_sequence_id._next_do()
+                elif respuestaws[0] == acuse_aprobado_anterior:
+                    if respuestaws[1] == encabezado["InvoiceRef"]:
+                        if respuestaws[2] == '030':
+                            move.state_acuse = '032'
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.journal_id.acuse_sequence_id._next_do()
+                        elif respuestaws[2] == '032':
+                            move.state_acuse = '000'
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.journal_id.acuse_sequence_id._next_do()
+                        else:
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = respuestaws[2]
+                            move.journal_id.acuse_sequence_id._next_do()
+                    else:
+                        move.description_status_dian_acuse = respuestaws[0] + ';' + respuestaws[1]
                 else:
-                    move.description_status_dian_acuse = respuestaws
+                    move.description_status_dian_acuse = respuestaws[0]
             elif responsews.status_code == 500:
                 raise UserError("Error en la conexión al Web service")
 
@@ -207,7 +224,7 @@ class Invoice(models.Model):
 
             url = ''
 
-            directorio = "Facturacion/Acuses/" + self.GetNitCompany(self.company_id.vat) + "/"
+            directorio = "Facturacion/Acuses/" + move.GetNitCompany(move.company_id.vat) + "/"
 
             if self.env.company.ruta_plantilla_acuse:
                 ruta_xml = self.env.company.ruta_plantilla_acuse + "/Acuses/" + move.GetNitCompany(
@@ -244,20 +261,37 @@ class Invoice(models.Model):
             responsews = requests.post(url, data=body.encode('utf-8'), headers=headers)
 
             tipodato = type(responsews)
-            resultados = ""
+            acuse_aprobado_anterior = "Acuse con numero {0} ya aprobado con los sgtes datos".format(
+                encabezado['AcsNum'])
             respuestaws = ""
             if responsews.status_code == 200:
                 respuesta = eval(responsews.content.decode('utf-8'))
                 if 'Respuesta' in respuesta:
                     resultados = respuesta['Respuesta']
-                    respuestaws = move.GetResponseWS(resultados)
+                    respuestaws = move.GetResponseWS(resultados).split(';')
 
-                if respuestaws == 'PROCESADO_CORRECTAMENTE':
+                if respuestaws[0] == 'PROCESADO_CORRECTAMENTE':
                     move.state_acuse = '000'
-                    move.description_status_dian_acuse = respuestaws
+                    move.description_status_dian_acuse = respuestaws[0]
                     move.journal_id.acuse_sequence_id._next_do()
+                elif respuestaws[0] == acuse_aprobado_anterior:
+                    if respuestaws[1] == encabezado["InvoiceRef"]:
+                        if respuestaws[2] == '030':
+                            move.state_acuse = '032'
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.journal_id.acuse_sequence_id._next_do()
+                        elif respuestaws[2] == '032':
+                            move.state_acuse = '000'
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.journal_id.acuse_sequence_id._next_do()
+                        else:
+                            move.description_status_dian_acuse = respuestaws
+                            move.state_acuse = respuestaws[2]
+                            move.journal_id.acuse_sequence_id._next_do()
+                    else:
+                        move.description_status_dian_acuse = respuestaws[0] + ';' + respuestaws[1]
                 else:
-                    move.description_status_dian_acuse = respuestaws
+                    move.description_status_dian_acuse = respuestaws[0]
             elif responsews.status_code == 500:
                 raise UserError("Error en la conexión al Web service")
 
@@ -330,20 +364,39 @@ class Invoice(models.Model):
             responsews = requests.post(url, data=body.encode('utf-8'), headers=headers)
 
             tipodato = type(responsews)
-            resultados = ""
+            acuse_aprobado_anterior = "Acuse con numero {0} ya aprobado con los sgtes datos".format(
+                encabezado['AcsNum'])
             respuestaws = ""
             if responsews.status_code == 200:
                 respuesta = eval(responsews.content.decode('utf-8'))
                 if 'Respuesta' in respuesta:
                     resultados = respuesta['Respuesta']
-                    respuestaws = move.GetResponseWS(resultados)
+                    respuestaws = move.GetResponseWS(resultados).split(';')
 
-                if respuestaws == 'PROCESADO_CORRECTAMENTE':
+                if respuestaws[0] == 'PROCESADO_CORRECTAMENTE':
                     move.description_status_dian_acuse = respuestaws
                     move.journal_id.acuse_sequence_id._next_do()
+                elif respuestaws[0] == acuse_aprobado_anterior:
+                    if respuestaws[1] == encabezado["InvoiceRef"]:
+                        if respuestaws[2] == '030':
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = '032'
+                            move.journal_id.acuse_sequence_id._next_do()
+                        elif respuestaws[2] == '032':
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = '000'
+                            move.journal_id.acuse_sequence_id._next_do()
+                        else:
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = respuestaws[2]
+                            move.journal_id.acuse_sequence_id._next_do()
+                    else:
+                        move.description_status_dian_acuse = respuestaws[0] + ';' + respuestaws[1]
+                        move.state_acuse = '000'
                 else:
-                    move.description_status_dian_acuse = respuestaws
+                    move.description_status_dian_acuse = respuestaws[0]
                     move.state_acuse = '000'
+
             elif responsews.status_code == 500:
                 raise UserError("Error en la conexión al Web service")
 
@@ -385,11 +438,11 @@ class Invoice(models.Model):
 
             url = ''
 
-            directorio = "Facturacion/Acuses/" + self.GetNitCompany(self.company_id.vat) + "/"
+            directorio = "Facturacion/Acuses/" + move.GetNitCompany(move.company_id.vat) + "/"
 
             if self.env.company.ruta_plantilla_acuse:
-                ruta_xml = self.env.company.ruta_plantilla_acuse + "/Acuses/" + self.GetNitCompany(
-                    self.company_id.vat) + "/"
+                ruta_xml = self.env.company.ruta_plantilla_acuse + "/Acuses/" + move.GetNitCompany(
+                    move.company_id.vat) + "/"
             else:
                 ruta_xml = directorio
 
@@ -499,130 +552,193 @@ class Invoice(models.Model):
             responsews = requests.post(url, data=body.encode('utf-8'), headers=headers)
 
             tipodato = type(responsews)
-            resultados = ""
+            acuse_aprobado_anterior = "Acuse con numero {0} ya aprobado con los sgtes datos".format(
+                encabezado['AcsNum'])
             respuestaws = ""
             if responsews.status_code == 200:
                 respuesta = eval(responsews.content.decode('utf-8'))
                 if 'Respuesta' in respuesta:
                     resultados = respuesta['Respuesta']
-                    respuestaws = move.GetResponseWS(resultados)
+                    respuestaws = move.GetResponseWS(resultados).split(';')
 
-                if respuestaws == 'PROCESADO_CORRECTAMENTE':
+                if respuestaws[0] == 'PROCESADO_CORRECTAMENTE':
                     move.description_status_dian_acuse = respuestaws
                     move.journal_id.acuse_sequence_id._next_do()
+                elif respuestaws[0] == acuse_aprobado_anterior:
+                    if respuestaws[1] == encabezado["InvoiceRef"]:
+                        if respuestaws[2] == '030':
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = '032'
+                            move.journal_id.acuse_sequence_id._next_do()
+                        elif respuestaws[2] == '032':
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = '000'
+                            move.journal_id.acuse_sequence_id._next_do()
+                        else:
+                            move.description_status_dian_acuse = respuestaws[0]
+                            move.state_acuse = respuestaws[2]
+                            move.journal_id.acuse_sequence_id._next_do()
+                    else:
+                        move.description_status_dian_acuse = respuestaws[0] + ';' + respuestaws[1]
+                        move.state_acuse = '000'
                 else:
-                    move.description_status_dian_acuse = respuestaws
+                    move.description_status_dian_acuse = respuestaws[0]
                     move.state_acuse = '000'
+
             elif responsews.status_code == 500:
                 raise UserError("Error en la conexión al Web service")
 
+    # def LeerAttachment(self, move):
+    #     attachments = move.env['ir.attachment'].search([('res_model', '=', 'account.move'), ('res_id', '=', move.id)])
+    #     if len(attachments) > 0:
+    #         for attach in attachments:
+    #             archivo = open(attach._full_path(attach.store_fname), 'rb').read()
+    #             if move.env.company.ruta_plantilla_acuse:
+    #                 ruta = move.env.company.ruta_plantilla_acuse + '/'
+    #             else:
+    #                 ruta = 'temporal/'
+    #             name = attach.name
+    #             if name.find(".zip") != -1:
+    #                 full_ruta = os.path.abspath(os.path.join('', ruta))
+    #                 if not os.path.exists(full_ruta):
+    #                     os.makedirs(full_ruta)
+    #
+    #                 with open(full_ruta + "/temp.zip", "wb") as tmp:
+    #                     tmp.write(archivo)
+    #                     name_zip = full_ruta + "/temp.zip"
+    #
+    #                 if zipfile.is_zipfile(name_zip):
+    #                     with zipfile.ZipFile(name_zip, 'r') as obj_zip:
+    #                         FileNames = obj_zip.namelist()
+    #                         for fileName in FileNames:
+    #                             if fileName.endswith('.xml'):
+    #                                 attach = ET.parse(name_zip)
+    #                                 nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
+    #                                                         namespaces=NSMAP).text
+    #                                 if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
+    #                                     raise ValidationError('El NIT del xml no corresponde al NIT del proveedor de esta factura')
+    #                                 firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
+    #                                                           namespaces=NSMAP)
+    #                                 firmada = ET.fromstring(firmadaText.text)
+    #                                 InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
+    #                                 CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
+    #                                 fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
+    #                                                                                                                '/')
+    #                                 hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
+    #                                 fecha_completa = fecha_factura + ' ' + hora_factura
+    #                                 numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
+    #     elif move.attachment_ids:
+    #         for attach in move.attachment_ids:
+    #             archivo = open(attach._full_path(attach.store_fname), 'rb').read()
+    #             if move.env.company.ruta_plantilla_acuse:
+    #                 ruta = move.env.company.ruta_plantilla_acuse + '/'
+    #             else:
+    #                 ruta = 'temporal/'
+    #             name = attach.name
+    #             if name.endswith('.zip'):
+    #                 full_ruta = os.path.abspath(os.path.join('', ruta))
+    #                 if not os.path.exists(full_ruta):
+    #                     os.makedirs(full_ruta)
+    #
+    #                 with open(full_ruta + "/temp.zip", "wb") as tmp:
+    #                     tmp.write(archivo)
+    #                     name_zip = full_ruta + "/temp.zip"
+    #
+    #                 if zipfile.is_zipfile(name_zip):
+    #                     with zipfile.ZipFile(name_zip, 'r') as obj_zip:
+    #                         FileNames = obj_zip.namelist()
+    #                         for fileName in FileNames:
+    #                             if fileName.endswith('.xml'):
+    #                                 attach = ET.parse(name_zip)
+    #                                 nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
+    #                                                             namespaces=NSMAP).text
+    #                                 if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
+    #                                     raise ValidationError(
+    #                                         'El NIT del xml no corresponde al NIT del proveedor de esta factura')
+    #                                 firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
+    #                                                           namespaces=NSMAP)
+    #                                 firmada = ET.fromstring(firmadaText.text)
+    #                                 InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
+    #                                 CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
+    #                                 fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
+    #                                                                                                                '/')
+    #                                 hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
+    #                                 fecha_completa = fecha_factura + ' ' + hora_factura
+    #                                 numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
+    #             else:
+    #                 if name.endswith('.xml'):
+    #                     full_ruta = os.path.abspath(os.path.join('', ruta))
+    #                     if not os.path.exists(full_ruta):
+    #                         os.makedirs(full_ruta)
+    #
+    #                     archivo = open(attach._full_path(attach.store_fname), 'rb').read()
+    #
+    #                     with open(full_ruta + "/temp.xml", "wb") as tmp:
+    #                         tmp.write(archivo)
+    #                         name_zip = full_ruta + "/temp.xml"
+    #
+    #                     attach = ET.parse(name_zip)
+    #                     nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
+    #                                                 namespaces=NSMAP).text
+    #                     if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
+    #                         raise ValidationError('El NIT del xml no corresponde al NIT del proveedor de esta factura')
+    #                     firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
+    #                                               namespaces=NSMAP)
+    #                     firmada = ET.fromstring(firmadaText.text)
+    #                     InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
+    #                     CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
+    #                     fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
+    #                                                                                                    '/')
+    #                     hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
+    #                     fecha_completa = fecha_factura + ' ' + hora_factura
+    #                     numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
+    #
+    #     move.write({'ref': numero_factura, 'fecha_fac_dian': fecha_completa.replace('/', '-'),
+    #                 'cufe_fac_proveedor': CUFE, 'invoice_type_ref_proveedor': InvoiceTypeRef})
+
     def LeerAttachment(self, move):
-        attachments = move.env['ir.attachment'].search([('res_model', '=', 'account.move'), ('res_id', '=', move.id)])
-        if len(attachments) > 0:
-            for attach in attachments:
-                archivo = open(attach._full_path(attach.store_fname), 'rb').read()
-                if move.env.company.ruta_plantilla_acuse:
-                    ruta = move.env.company.ruta_plantilla_acuse + '/'
-                else:
-                    ruta = 'temporal/'
-                name = attach.name
-                if name.find(".zip") != -1:
-                    full_ruta = os.path.abspath(os.path.join('', ruta))
-                    if not os.path.exists(full_ruta):
-                        os.makedirs(full_ruta)
-
-                    with open(full_ruta + "/temp.zip", "wb") as tmp:
-                        tmp.write(archivo)
-                        name_zip = full_ruta + "/temp.zip"
-
-                    if zipfile.is_zipfile(name_zip):
-                        with zipfile.ZipFile(name_zip, 'r') as obj_zip:
-                            FileNames = obj_zip.namelist()
-                            for fileName in FileNames:
-                                if fileName.endswith('.xml'):
-                                    attach = ET.parse(name_zip)
-                                    nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
-                                                            namespaces=NSMAP).text
-                                    if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
-                                        raise ValidationError('El NIT del xml no corresponde al NIT del proveedor de esta factura')
-                                    firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
-                                                              namespaces=NSMAP)
-                                    firmada = ET.fromstring(firmadaText.text)
-                                    InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
-                                    CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
-                                    fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
-                                                                                                                   '/')
-                                    hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
-                                    fecha_completa = fecha_factura + ' ' + hora_factura
-                                    numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
-        elif move.attachment_ids:
+        if move.attachment_ids:
             for attach in move.attachment_ids:
-                archivo = open(attach._full_path(attach.store_fname), 'rb').read()
-                if move.env.company.ruta_plantilla_acuse:
-                    ruta = move.env.company.ruta_plantilla_acuse + '/'
-                else:
-                    ruta = 'temporal/'
                 name = attach.name
-                if name.endswith('.zip'):
-                    full_ruta = os.path.abspath(os.path.join('', ruta))
-                    if not os.path.exists(full_ruta):
-                        os.makedirs(full_ruta)
+                if name.endswith('.xml'):
+                    archivo = base64.b64decode(attach.datas).decode("utf-8")
 
-                    with open(full_ruta + "/temp.zip", "wb") as tmp:
-                        tmp.write(archivo)
-                        name_zip = full_ruta + "/temp.zip"
+                    try:
+                        attach = ET.fromstring(archivo)
+                    except:
+                        raise ValidationError('Error al leer el xml')
 
-                    if zipfile.is_zipfile(name_zip):
-                        with zipfile.ZipFile(name_zip, 'r') as obj_zip:
-                            FileNames = obj_zip.namelist()
-                            for fileName in FileNames:
-                                if fileName.endswith('.xml'):
-                                    attach = ET.parse(name_zip)
-                                    nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
-                                                                namespaces=NSMAP).text
-                                    if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
-                                        raise ValidationError(
-                                            'El NIT del xml no corresponde al NIT del proveedor de esta factura')
-                                    firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
-                                                              namespaces=NSMAP)
-                                    firmada = ET.fromstring(firmadaText.text)
-                                    InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
-                                    CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
-                                    fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
-                                                                                                                   '/')
-                                    hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
-                                    fecha_completa = fecha_factura + ' ' + hora_factura
-                                    numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
-                else:
-                    if name.endswith('.xml'):
-                        full_ruta = os.path.abspath(os.path.join('', ruta))
-                        if not os.path.exists(full_ruta):
-                            os.makedirs(full_ruta)
-
-                        archivo = open(attach._full_path(attach.store_fname), 'rb').read()
-
-                        with open(full_ruta + "/temp.xml", "wb") as tmp:
-                            tmp.write(archivo)
-                            name_zip = full_ruta + "/temp.xml"
-
-                        attach = ET.parse(name_zip)
-                        nit_proveedor = attach.find('.//cac:SenderParty/cac:PartyTaxScheme/cbc:CompanyID',
-                                                    namespaces=NSMAP).text
-                        if nit_proveedor != move.GetNitCompany(move.partner_id.vat):
-                            raise ValidationError('El NIT del xml no corresponde al NIT del proveedor de esta factura')
-                        firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
-                                                  namespaces=NSMAP)
+                    firmadaText = attach.find('.//cac:Attachment/cac:ExternalReference/cbc:Description',
+                                              namespaces=NSMAP)
+                    try:
                         firmada = ET.fromstring(firmadaText.text)
-                        InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
-                        CUFE = attach.find('.//cbc:UUID', namespaces=NSMAP).text
-                        fecha_factura = attach.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-',
-                                                                                                       '/')
-                        hora_factura = attach.find('.//cbc:IssueTime', namespaces=NSMAP).text.split('-')[0]
-                        fecha_completa = fecha_factura + ' ' + hora_factura
-                        numero_factura = attach.find('.//cbc:ParentDocumentID', namespaces=NSMAP).text
+                    except:
+                        raise ValidationError('No obtuvo la firmada')
 
-        move.write({'ref': numero_factura, 'fecha_fac_dian': fecha_completa.replace('/', '-'),
-                    'cufe_fac_proveedor': CUFE, 'invoice_type_ref_proveedor': InvoiceTypeRef})
+                    nit_proveedor = firmada.find(
+                        './/cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID',
+                        namespaces=NSMAP).text
+                    print(nit_proveedor)
+                    nit_partner = move.GetNitCompany(move.partner_id.vat)
+                    if nit_proveedor != nit_partner:
+                        raise ValidationError('El NIT {0} del xml no corresponde al NIT {1} del proveedor de esta factura'.format(
+                                nit_proveedor, nit_partner))
+
+                    InvoiceTypeRef = firmada.find('.//cbc:InvoiceTypeCode', namespaces=NSMAP).text
+                    CUFE = firmada.find('.//cbc:UUID', namespaces=NSMAP).text
+                    fecha_factura = firmada.find('.//cbc:IssueDate', namespaces=NSMAP).text.replace('-', '/')
+                    fecha_completa = fecha_factura
+                    numero_factura = firmada.find('.//cbc:ID', namespaces=NSMAP).text
+                    print(InvoiceTypeRef, CUFE)
+                else:
+                    raise ValidationError('No hay attachments')
+        else:
+            raise ValidationError('Debe adjuntar un xml')
+
+        move.write({'ref': numero_factura if numero_factura else 'No cargo numero de factura',
+                    'fecha_fac_dian': fecha_completa.replace('/', '-') if fecha_completa else False,
+                    'cufe_fac_proveedor': CUFE if CUFE else 'No hay CUFE',
+                    'invoice_type_ref_proveedor': InvoiceTypeRef if InvoiceTypeRef else 'No hay InvoiceTypeRef'})
 
     def EncabezadoAcuse(self, move):
         # AcsHead
@@ -682,16 +798,17 @@ class Invoice(models.Model):
         datos = dict(Company=move.GetNitCompany(move.company_id.vat),
                      AcsType=AcsType,
                      AcsNum=AcsNum,
-                     InvoiceRef=move.ref,
+                     InvoiceRef=move.ref if move.state_acuse != '034' else move.name,
                      RejectType=RejectType,
                      RejectName=RejectName,
                      InvoiceTypeRef=move.invoice_type_ref_proveedor if move.state_acuse != '034' else "01",
                      InvoiceCufeRef=move.cufe_fac_proveedor if move.state_acuse != '034' else " ",
-                     InvoiceDateRef=move.fecha_fac_dian.strftime('%Y-%m-%d %H:%M:%S').replace('-', '/') if move.state_acuse != '034' else " ",
+                     InvoiceDateRef=move.fecha_fac_dian.strftime('%Y-%m-%d') if move.state_acuse != '034' else " ",
                      TecnicalKey=TecnicalKey,
-                     idSoftware=IdSoftware,
+                     IdSoftware=IdSoftware,
                      TestSet=TestSet,
-                     PinSoftware=PinSoftware, )
+                     PinSoftware=PinSoftware,
+                     Note=Note)
 
         return datos
 

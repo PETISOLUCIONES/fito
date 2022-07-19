@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='sequence']/group" position="after">
-                <group name="acuse" string="Secuencia acuse" attrs="{'invisible': [('type','!=','purchase')]}">
+                <group name="acuse" string="Secuencia acuse" attrs="{'invisible': [('type','not in', ['purchase', 'sale'])]}">
                     <group>
                         <field name="acuse_sequence_number_next"/>
                         <field name="acuse_sequence_id"/>
